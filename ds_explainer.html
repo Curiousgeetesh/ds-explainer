@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data Science Explained — Visual Stories</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Space+Mono:wght@400;700&family=Nunito:wght@400;600;800&display=swap');
+
+  :root {
+    --bg: #0a0a0f;
+    --card: #13131f;
+    --accent1: #ff6b35;
+    --accent2: #00d4aa;
+    --accent3: #7c3aed;
+    --accent4: #f59e0b;
+    --accent5: #ec4899;
+    --text: #f0f0f5;
+    --muted: #6b7280;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Nunito', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    padding: 2rem;
+  }
+
+  .hero-bg {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 20% 50%, #7c3aed22 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, #ff6b3522 0%, transparent 60%),
+                radial-gradient(ellipse at 50% 80%, #00d4aa11 0%, transparent 60%);
+    animation: breathe 8s ease-in-out infinite;
+  }
+
+  @keyframes breathe {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(1.05); }
+  }
+
+  .floating-dots {
+    position: absolute; inset: 0; pointer-events: none;
+  }
+
+  .dot {
+    position: absolute;
+    border-radius: 50%;
+    animation: float linear infinite;
+    opacity: 0.4;
+  }
+
+  @keyframes float {
+    0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+    10% { opacity: 0.4; }
+    90% { opacity: 0.4; }
+    100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+  }
+
+  .hero h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2.5rem, 8vw, 5.5rem);
+    font-weight: 800;
+    line-height: 1.05;
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero h1 span { color: var(--accent1); }
+
+  .hero p {
+    font-size: 1.2rem;
+    color: #aaa;
+    margin-top: 1rem;
+    max-width: 600px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .scroll-hint {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--muted);
+    font-size: 0.85rem;
+    animation: bounce 2s infinite;
+    z-index: 1;
+  }
+
+  @keyframes bounce {
+    0%,100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(8px); }
+  }
+
+  .scroll-arrow { font-size: 1.5rem; }
+
+  /* ── NAV PILLS ── */
+  .nav-pills {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(10,10,15,0.95);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid #ffffff0d;
+    padding: 1rem 2rem;
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .pill {
+    padding: 0.5rem 1.25rem;
+    border-radius: 999px;
+    border: 1px solid #ffffff15;
+    background: transparent;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .pill:hover, .pill.active {
+    background: var(--accent1);
+    color: white;
+    border-color: var(--accent1);
+    transform: scale(1.05);
+  }
+
+  /* ── SECTION ── */
+  .section {
+    padding: 6rem 2rem;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+  }
+
+  .q-badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    font-weight: 700;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    font-weight: 800;
+    line-height: 1.2;
+  }
+
+  /* ── STORY CARD ── */
+  .story-scene {
+    background: var(--card);
+    border-radius: 20px;
+    padding: 2.5rem;
+    margin-bottom: 2rem;
+    border: 1px solid #ffffff08;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .story-scene::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--scene-color, var(--accent1));
+  }
+
+  .scene-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--scene-color, var(--accent1));
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  /* ── ANIMATION STAGE ── */
+  .anim-stage {
+    background: #0d0d18;
+    border-radius: 16px;
+    padding: 2rem;
+    margin: 1.5rem 0;
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid #ffffff08;
+  }
+
+  /* ── Q1 ANIMATIONS: Chef Kitchen ── */
+  .chef-scene {
+    display: flex;
+    gap: 3rem;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .chef-figure {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    animation: popIn 0.6s ease backwards;
+  }
+
+  .chef-figure:nth-child(2) { animation-delay: 0.2s; }
+  .chef-figure:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes popIn {
+    from { opacity: 0; transform: translateY(20px) scale(0.9); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .chef-emoji { font-size: 3.5rem; animation: wiggle 3s ease-in-out infinite; }
+  .chef-emoji:nth-child(1) { animation-delay: 0s; }
+
+  @keyframes wiggle {
+    0%,100% { transform: rotate(-3deg); }
+    50% { transform: rotate(3deg); }
+  }
+
+  .chef-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    text-align: center;
+    color: var(--accent2);
+  }
+
+  .chef-role {
+    font-size: 0.8rem;
+    color: #aaa;
+    text-align: center;
+    max-width: 100px;
+  }
+
+  .plus-sign {
+    font-size: 2rem;
+    color: var(--accent4);
+    font-weight: 800;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%,100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+  }
+
+  .arrow-result {
+    font-size: 2rem;
+    color: var(--accent1);
+    animation: slideRight 1s ease-in-out infinite alternate;
+  }
+
+  @keyframes slideRight {
+    from { transform: translateX(-5px); }
+    to { transform: translateX(5px); }
+  }
+
+  /* ── Q2 LIFECYCLE PIPELINE ── */
+  .pipeline {
+    display: flex;
+    gap: 0;
+    align-items: stretch;
+    overflow-x: auto;
+    padding: 1rem 0;
+  }
+
+  .pipe-step {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .pipe-node {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    border: 2px solid;
+    position: relative;
+    animation: nodeAppear 0.5s ease backwards;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+
+  .pipe-node:hover { transform: scale(1.15); }
+
+  @keyframes nodeAppear {
+    from { opacity: 0; transform: scale(0); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  .pipe-connector {
+    width: 40px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent1), var(--accent2));
+    align-self: center;
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .pipe-connector::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: white;
+    animation: flow 2s linear infinite;
+  }
+
+  @keyframes flow {
+    to { left: 100%; }
+  }
+
+  .pipe-label {
+    font-size: 0.6rem;
+    font-family: 'Space Mono', monospace;
+    color: #aaa;
+    text-align: center;
+    max-width: 70px;
+  }
+
+  .pipe-time {
+    font-size: 0.55rem;
+    color: var(--accent4);
+    text-align: center;
+  }
+
+  /* ── Q3 DATA TYPES ── */
+  .data-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1rem;
+  }
+
+  @media (max-width: 600px) { .data-split { grid-template-columns: 1fr; } }
+
+  .data-card {
+    padding: 1.5rem;
+    border-radius: 14px;
+    text-align: center;
+    animation: fadeSlide 0.6s ease backwards;
+  }
+
+  @keyframes fadeSlide {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .data-icon { font-size: 3rem; margin-bottom: 0.75rem; display: block; }
+
+  /* ── Q4 ML TYPES ── */
+  .ml-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+  }
+
+  @media (max-width: 700px) { .ml-cards { grid-template-columns: 1fr; } }
+
+  .ml-card {
+    padding: 2rem 1.5rem;
+    border-radius: 16px;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.3s;
+  }
+
+  .ml-card:hover { transform: translateY(-6px); }
+
+  .ml-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--ml-color);
+    transform: scaleX(0);
+    transition: transform 0.3s;
+  }
+
+  .ml-card:hover::after { transform: scaleX(1); }
+
+  .ml-emoji { font-size: 2.5rem; margin-bottom: 1rem; display: block; }
+  .ml-type { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.1rem; margin-bottom: 0.5rem; }
+  .ml-analogy { font-size: 0.8rem; color: #aaa; line-height: 1.5; margin-bottom: 1rem; }
+  .ml-example {
+    font-size: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    background: #ffffff08;
+    border-left: 3px solid var(--ml-color);
+    color: var(--ml-color);
+    font-family: 'Space Mono', monospace;
+  }
+
+  /* ── Q5 EDA ── */
+  .eda-steps {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.75rem;
+  }
+
+  @media (max-width: 800px) { .eda-steps { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 400px) { .eda-steps { grid-template-columns: 1fr; } }
+
+  .eda-step {
+    padding: 1.25rem 1rem;
+    border-radius: 14px;
+    text-align: center;
+    animation: popIn 0.5s ease backwards;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .eda-step::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--eda-color);
+    opacity: 0.08;
+    transition: opacity 0.2s;
+  }
+
+  .eda-step:hover::before { opacity: 0.18; }
+  .eda-step:hover { transform: scale(1.05); }
+
+  .eda-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--eda-color);
+    margin-bottom: 0.5rem;
+    display: block;
+  }
+
+  .eda-emoji { font-size: 2rem; display: block; margin-bottom: 0.5rem; }
+  .eda-title { font-size: 0.8rem; font-weight: 800; margin-bottom: 0.4rem; }
+  .eda-desc { font-size: 0.7rem; color: #aaa; line-height: 1.4; }
+
+  /* ── INSIGHT BOX ── */
+  .insight {
+    padding: 1.25rem 1.5rem;
+    border-radius: 12px;
+    border-left: 4px solid;
+    background: #ffffff05;
+    font-size: 0.9rem;
+    line-height: 1.7;
+    margin: 1rem 0;
+  }
+
+  .insight strong { color: var(--accent4); }
+
+  /* ── QUOTE ── */
+  .big-quote {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.2rem, 3vw, 1.8rem);
+    font-weight: 800;
+    text-align: center;
+    line-height: 1.4;
+    padding: 2rem;
+    position: relative;
+  }
+
+  .big-quote::before {
+    content: '"';
+    font-size: 6rem;
+    position: absolute;
+    top: -1rem;
+    left: 1rem;
+    opacity: 0.1;
+    font-family: Georgia, serif;
+  }
+
+  /* ── SEPARATOR ── */
+  .sep {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #ffffff15, transparent);
+    margin: 2rem 0;
+  }
+
+  /* ── TOOLTIP POPUP ── */
+  .tooltip-popup {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: var(--card);
+    border: 1px solid var(--accent2);
+    border-radius: 16px;
+    padding: 1.25rem 1.5rem;
+    max-width: 300px;
+    z-index: 200;
+    transform: translateY(200%);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    font-size: 0.85rem;
+    line-height: 1.6;
+    box-shadow: 0 20px 60px #00d4aa22;
+  }
+
+  .tooltip-popup.show { transform: translateY(0); }
+  .tooltip-title { font-family: 'Syne', sans-serif; font-weight: 800; margin-bottom: 0.5rem; color: var(--accent2); }
+
+  .close-tip {
+    position: absolute;
+    top: 0.75rem; right: 0.75rem;
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 1.1rem;
+  }
+
+  /* ── PROGRESS BAR ── */
+  .progress-bar {
+    position: fixed;
+    top: 0; left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent3), var(--accent1), var(--accent2));
+    z-index: 999;
+    transition: width 0.1s;
+  }
+
+  /* ── COMPARISON TABLE ── */
+  .compare-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 8px;
+    font-size: 0.85rem;
+  }
+
+  .compare-table th {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--muted);
+    padding: 0 1rem 0.5rem;
+    text-align: left;
+  }
+
+  .compare-table td {
+    padding: 0.9rem 1rem;
+    background: #ffffff05;
+  }
+
+  .compare-table td:first-child {
+    border-radius: 10px 0 0 10px;
+    border-left: 3px solid var(--accent1);
+    font-weight: 700;
+    color: var(--accent4);
+  }
+
+  .compare-table td:last-child { border-radius: 0 10px 10px 0; }
+
+  /* ── FOOTER ── */
+  .footer {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--muted);
+    font-size: 0.85rem;
+    border-top: 1px solid #ffffff08;
+  }
+
+  .footer strong { color: var(--accent1); }
+
+  /* Scroll reveal */
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- TOOLTIP POPUP -->
+<div class="tooltip-popup" id="tooltip">
+  <button class="close-tip" onclick="closeTooltip()">✕</button>
+  <div class="tooltip-title" id="tipTitle">Tip</div>
+  <div id="tipBody">Info here</div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!--                    HERO                     -->
+<!-- ═══════════════════════════════════════════ -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="floating-dots" id="floatingDots"></div>
+
+  <h1>Data Science<br><span>Explained Visually</span></h1>
+  <p>5 topics. Real analogies. Zero confusion.<br>From a complete beginner to market-ready.</p>
+
+  <div class="scroll-hint">
+    <span>Scroll to explore</span>
+    <span class="scroll-arrow">↓</span>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!--              NAV PILLS                      -->
+<!-- ═══════════════════════════════════════════ -->
+<nav class="nav-pills">
+  <button class="pill active" onclick="scrollTo('q1')">Q1 · What is DS</button>
+  <button class="pill" onclick="scrollTo('q2')">Q2 · Lifecycle</button>
+  <button class="pill" onclick="scrollTo('q3')">Q3 · Data Types</button>
+  <button class="pill" onclick="scrollTo('q4')">Q4 · ML Types</button>
+  <button class="pill" onclick="scrollTo('q5')">Q5 · EDA</button>
+</nav>
+
+<!-- ═══════════════════════════════════════════ -->
+<!--              Q1 — WHAT IS DATA SCIENCE      -->
+<!-- ═══════════════════════════════════════════ -->
+<section class="section reveal" id="q1">
+  <div class="section-header">
+    <span class="q-badge" style="background:#ff6b3520;color:#ff6b35;border:1px solid #ff6b3540;">Q1</span>
+    <h2 class="section-title">What is Data Science?</h2>
+  </div>
+
+  <!-- Story Scene 1: The Mango Story -->
+  <div class="story-scene" style="--scene-color:#ff6b35">
+    <div class="scene-label">🥭 The Mango Story — Your First ML Moment</div>
+    <p style="line-height:1.8;color:#ccc;margin-bottom:1.5rem;">
+      You're 10 years old at a fruit market. Your mom shows you <strong style="color:#ff6b35">50 mangoes</strong> and <strong style="color:#00d4aa">50 papayas</strong> — color, shape, smell, feel. After enough examples, your brain builds a rule. Next week, you can identify a fruit you've <em>never seen before</em>.
+      <br><br>
+      <strong style="color:#f59e0b">That is Machine Learning.</strong> Your brain = the algorithm. The fruits = training data. Your ability to identify new ones = the trained model.
+    </p>
+
+    <div class="anim-stage">
+      <div style="display:flex;gap:2rem;align-items:center;flex-wrap:wrap;justify-content:center;">
+        <div style="text-align:center;animation:popIn 0.5s ease backwards;">
+          <div style="font-size:3rem;margin-bottom:0.5rem;">🥭🥭🥭<br>🥭🥭🥭</div>
+          <div style="font-size:0.7rem;font-family:'Space Mono',monospace;color:#ff6b35;">50 MANGOES<br>(examples with label)</div>
+        </div>
+        <div style="font-size:2rem;color:#f59e0b;animation:pulse 1.5s infinite;">+</div>
+        <div style="text-align:center;animation:popIn 0.5s ease 0.2s backwards;">
+          <div style="font-size:3rem;margin-bottom:0.5rem;">🍈🍈🍈<br>🍈🍈🍈</div>
+          <div style="font-size:0.7rem;font-family:'Space Mono',monospace;color:#00d4aa;">50 PAPAYAS<br>(examples with label)</div>
+        </div>
+        <div style="font-size:2rem;color:#aaa;animation:slideRight 1s infinite alternate;">→</div>
+        <div style="text-align:center;animation:popIn 0.5s ease 0.4s backwards;">
+          <div style="font-size:4rem;margin-bottom:0.5rem;">🧠</div>
+          <div style="font-size:0.7rem;font-family:'Space Mono',monospace;color:#7c3aed;">BRAIN LEARNS<br>THE PATTERN</div>
+        </div>
+        <div style="font-size:2rem;color:#aaa;animation:slideRight 1s infinite alternate;">→</div>
+        <div style="text-align:center;animation:popIn 0.5s ease 0.6s backwards;">
+          <div style="font-size:3rem;margin-bottom:0.5rem;">🍑</div>
+          <div style="font-size:0.7rem;font-family:'Space Mono',monospace;color:#ec4899;">NEW FRUIT?<br>IDENTIFIED! ✓</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Story Scene 2: The Three Chefs -->
+  <div class="story-scene" style="--scene-color:#00d4aa">
+    <div class="scene-label">👨‍🍳 The Three Chefs — The Three Pillars</div>
+    <p style="line-height:1.8;color:#ccc;margin-bottom:1.5rem;">
+      Imagine a <strong style="color:#00d4aa">world-class restaurant</strong>. It needs three experts to run perfectly. Data Science is the same.
+    </p>
+
+    <div class="anim-stage">
+      <div class="chef-scene">
+        <div class="chef-figure" style="animation-delay:0s">
+          <span class="chef-emoji">🔬</span>
+          <div class="chef-label">STATISTICIAN</div>
+          <div class="chef-role">Knows the recipe & food chemistry</div>
+        </div>
+        <div class="plus-sign">+</div>
+        <div class="chef-figure" style="animation-delay:0.2s">
+          <span class="chef-emoji">💻</span>
+          <div class="chef-label">PROGRAMMER</div>
+          <div class="chef-role">Builds the industrial kitchen equipment</div>
+        </div>
+        <div class="plus-sign">+</div>
+        <div class="chef-figure" style="animation-delay:0.4s">
+          <span class="chef-emoji">🏦</span>
+          <div class="chef-label">DOMAIN EXPERT</div>
+          <div class="chef-role">Knows what the customers actually want</div>
+        </div>
+        <div class="arrow-result">→</div>
+        <div class="chef-figure" style="animation-delay:0.6s">
+          <span class="chef-emoji">🚀</span>
+          <div class="chef-label" style="color:#ff6b35">DATA SCIENCE</div>
+          <div class="chef-role">Predicts 10,000 orders & auto-adjusts inventory</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Comparison -->
+  <div class="story-scene" style="--scene-color:#7c3aed">
+    <div class="scene-label">🏏 The Cricket Example — What Makes DS Different</div>
+    <table class="compare-table">
+      <tr>
+        <th>Approach</th>
+        <th>What it says</th>
+        <th>Type</th>
+      </tr>
+      <tr>
+        <td>📊 Statistics</td>
+        <td>Kohli averaged 54.3 runs last year</td>
+        <td style="color:#aaa;font-size:0.8rem;">Descriptive — looking back</td>
+      </tr>
+      <tr>
+        <td>📈 Analytics</td>
+        <td>Our team scores more in evening matches</td>
+        <td style="color:#aaa;font-size:0.8rem;">Diagnostic — slightly deeper</td>
+      </tr>
+      <tr>
+        <td style="border-color:#7c3aed;color:#7c3aed;">🤖 Data Science</td>
+        <td><strong style="color:#f0f0f5">73% probability Kohli scores 100+ tomorrow</strong>, promote him to open</td>
+        <td style="color:#7c3aed;font-size:0.8rem;font-weight:700;">Predictive + Prescriptive ✓</td>
+      </tr>
+    </table>
+  </div>
+</section>
+
+<div class="sep"></div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!--           Q2 — PROJECT LIFECYCLE            -->
+<!-- ═══════════════════════════════════════════ -->
+<section class="section reveal" id="q2">
+  <div class="section-header">
+    <span class="q-badge" style="background:#00d4aa20;color:#00d4aa;border:1px solid #00d4aa40;">Q2</span>
+    <h2 class="section-title">The Project Lifecycle</h2>
+  </div>
+
+  <!-- Doctor Analogy -->
+  <div class="story-scene" style="--scene-color:#00d4aa">
+    <div class="scene-label">🏥 Doctor Analogy — The Process No One Skips</div>
+    <p style="line-height:1.8;color:#ccc;margin-bottom:1.5rem;">
+      A patient walks in with chest pain. Does the doctor immediately prescribe medicine? <strong style="color:#ff6b35">Absolutely not.</strong>
+      They listen → examine → run tests → diagnose → prescribe → follow up. Skip any step and it's malpractice.
+      <br><br>
+      <strong style="color:#00d4aa">Building a model without EDA = prescribing medicine without examining the patient.</strong>
+    </p>
+
+    <div class="anim-stage" style="flex-direction:column;gap:1.5rem;">
+      <div style="display:flex;align-items:center;gap:0.5rem;font-size:0.8rem;color:#aaa;">
+        <span style="font-size:2rem;">🤕</span>
+        <span style="font-family:'Space Mono',monospace;font-size:0.65rem;color:#ff6b35;">PATIENT → PROBLEM</span>
+        <span style="font-size:1.5rem;color:#aaa;">→</span>
+        <span style="font-size:2rem;">👂</span>
+        <span style="font-family:'Space Mono',monospace;font-size:0.65rem;color:#00d4aa;">LISTEN → COLLECT</span>
+        <span style="font-size:1.5rem;color:#aaa;">→</span>
+        <span style="font-size:2rem;">🔬</span>
+        <span style="font-family:'Space Mono',monospace;font-size:0.65rem;color:#7c3aed;">TESTS → EDA</span>
+        <span style="font-size:1.5rem;color:#aaa;">→</span>
+        <span style="font-size:2rem;">🩺</span>
+        <span style="font-family:'Space Mono',monospace;font-size:0.65rem;color:#f59e0b;">DIAGNOSE → MODEL</span>
+        <span style="font-size:1.5rem;color:#aaa;">→</span>
+        <span style="font-size:2rem;">💊</span>
+        <span style="font-family:'Space Mono',monospace;font-size:0.65rem;color:#ec4899;">PRESCRIBE → DEPLOY</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pipeline Visual -->
+  <div class="story-scene" style="--scene-color:#f59e0b">
+    <div class="scene-label">🏦 Real Bank Story — Loan Default Model</div>
+    <p style="line-height:1.8;color:#ccc;margin-bottom:1.5rem;">
+      Business says: <em>"Reduce loan defaults."</em> Here's what actually happens across 6 months:
+    </p>
+
+    <div style="overflow-x:auto;padding-bottom:1rem;">
+      <div style="display:flex;align-items:flex-start;gap:0;min-width:700px;">
+
+        <div class="pipe-step">
+          <div class="pipe-node" style="background:#ff6b3515;border-color:#ff6b35;animation-delay:0s" onclick="showTip('Problem Definition','Business said: reduce defaults. You translate it to: predict probability of default within 90 days with AUC > 0.80')">🎯</div>
+          <div class="pipe-label">Problem<br>Definition</div>
+          <div class="pipe-time">Week 1</div>
+        </div>
+        <div class="pipe-connector"></div>
+
+        <div class="pipe-step">
+          <div class="pipe-node" style="background:#00d4aa15;border-color:#00d4aa;animation-delay:0.1s" onclick="showTip('Data Collection','Pull 3 years of loan repayment history, salary credits from bank statements, CIBIL bureau scores via API')">📥</div>
+          <div class="pipe-label">Data<br>Collection</div>
+          <div class="pipe-time">Week 2</div>
+        </div>
+        <div class="pipe-connector"></div>
+
+        <div class="pipe-step">
+          <div class="pipe-node" style="background:#7c3aed15;border-color:#7c3aed;animation-delay:0.2s" onclick="showTip('Data Cleaning (THE BIG ONE)','25% of income fields are blank. Ages listed as 0 or 150. Two branches used totally different formats. This takes 6 WEEKS just to fix. This is normal.')">🧹</div>
+          <div class="pipe-label">Clean +<br>EDA</div>
+          <div class="pipe-time" style="color:#ff6b35;">Weeks 3–8<br>⚠️ BIGGEST</div>
+        </div>
+        <div class="pipe-connector"></div>
+
+        <div class="pipe-step">
+          <div class="pipe-node" style="background:#f59e0b15;border-color:#f59e0b;animation-delay:0.3s" onclick="showTip('Feature Engineering','You create payment_streak (consecutive on-time payments) — turns out to be your strongest signal. No algorithm would find this without domain thinking.')">⚙️</div>
+          <div class="pipe-label">Feature<br>Engineering</div>
+          <div class="pipe-time">Week 9</div>
+        </div>
+        <div class="pipe-connector"></div>
+
+        <div class="pipe-step">
+          <div class="pipe-node" style="background:#ec489915;border-color:#ec4899;animation-delay:0.4s" onclick="showTip('Model Training','XGBoost outperforms logistic regression. Train on 2020–2022 data, validate on 2023. AUC: 0.84')">🤖</div>
+          <div class="pipe-label">Model<br>Training</div>
+          <div class="pipe-time">Week 10</div>
+        </div>
+        <div class="pipe-connector"></div>
+
+        <div class="pipe-step">
+          <div class="pipe-node" style="background:#00d4aa15;border-color:#00d4aa;animation-delay:0.5s" onclick="showTip('Deployment','Model runs every night. Flags high-risk customers. Triggers call center workflow next morning automatically.')">🚀</div>
+          <div class="pipe-label">Deploy</div>
+          <div class="pipe-time">Week 11</div>
+        </div>
+        <div class="pipe-connector"></div>
+
+        <div class="pipe-step">
+          <div class="pipe-node" style="background:#7c3aed15;border-color:#7c3aed;animation-delay:0.6s" onclick="showTip('Monitoring','6 months later, post-RBI rate hike, AUC drops from 0.84 to 0.71. Monitoring catches it before the business team notices. You retrain.')">👁️</div>
+          <div class="pipe-label">Monitor</div>
+          <div class="pipe-time">Ongoing</div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="insight" style="border-color:#f59e0b;margin-top:1.5rem;">
+      💡 <strong>The honest truth:</strong> If a project takes 6 months, roughly <strong>4 months</strong> are spent just preparing data. The model training that everyone talks about takes an afternoon. Accept this early and you'll be a better data scientist than 80% of people.
+    </div>
+
+    <p style="font-size:0.75rem;color:#666;margin-top:0.5rem;">👆 Click each node above for details</p>
+  </div>
+</section>
+
+<div class="sep"></div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!--           Q3 — STRUCTURED DATA              -->
+<!-- ═══════════════════════════════════════════ -->
+<section class="section reveal" id="q3">
+  <div class="section-header">
+    <span class="q-badge" style="background:#7c3aed20;color:#7c3aed;border:1px solid #7c3aed40;">Q3</span>
+    <h2 class="section-title">Structured vs Unstructured Data</h2>
+  </div>
+
+  <!-- Contact Book Analogy -->
+  <div class="story-scene" style="--scene-color:#7c3aed">
+    <div class="scene-label">📱 The Phone Contact Book vs WhatsApp</div>
+    <p style="line-height:1.8;color:#ccc;margin-bottom:1.5rem;">
+      Your <strong style="color:#00d4aa">contact book</strong> — every person has the same fields: name, number, email. Perfectly organized. You can search, sort, filter instantly. <br>
+      Your <strong style="color:#ec4899">WhatsApp</strong> — conversations, voice notes, memes, reactions. Tons of information but no fixed format. Much harder to process. <strong style="color:#f59e0b">But often far more insightful.</strong>
+    </p>
+
+    <div class="data-split">
+      <div class="data-card" style="background:#00d4aa10;border:1px solid #00d4aa30;animation-delay:0s">
+        <span class="data-icon">📊</span>
+        <div style="font-family:'Syne',sans-serif;font-weight:800;color:#00d4aa;margin-bottom:0.5rem;">STRUCTURED</div>
+        <div style="font-size:0.75rem;color:#aaa;line-height:1.6;">
+          Rows & columns<br>SQL-queryable<br><br>
+          <strong style="color:#00d4aa">Finance examples:</strong><br>
+          Stock prices (OHLCV)<br>
+          Balance sheets<br>
+          Loan transaction logs<br>
+          CIBIL scores
+        </div>
+      </div>
+
+      <div class="data-card" style="background:#ec489910;border:1px solid #ec489930;animation-delay:0.15s">
+        <span class="data-icon">💬</span>
+        <div style="font-family:'Syne',sans-serif;font-weight:800;color:#ec4899;margin-bottom:0.5rem;">UNSTRUCTURED</div>
+        <div style="font-size:0.75rem;color:#aaa;line-height:1.6;">
+          No fixed format<br>Needs NLP / CV<br><br>
+          <strong style="color:#ec4899">Finance examples:</strong><br>
+          Earnings call transcripts<br>
+          News articles<br>
+          Social media sentiment<br>
+          Analyst research reports
+        </div>
+      </div>
+
+      <div class="data-card" style="background:#f59e0b10;border:1px solid #f59e0b30;animation-delay:0.3s">
+        <span class="data-icon">🔀</span>
+        <div style="font-family:'Syne',sans-serif;font-weight:800;color:#f59e0b;margin-bottom:0.5rem;">SEMI-STRUCTURED</div>
+        <div style="font-size:0.75rem;color:#aaa;line-height:1.6;">
+          Some organization<br>Needs parsing<br><br>
+          <strong style="color:#f59e0b">Finance examples:</strong><br>
+          Bloomberg JSON API<br>
+          NSE data feeds<br>
+          SWIFT XML messages<br>
+          Broker API responses
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Two Analysts Story -->
+  <div class="story-scene" style="--scene-color:#ec4899">
+    <div class="scene-label">📈 Two Analysts — Why Unstructured Data Wins</div>
+    <p style="line-height:1.8;color:#ccc;margin-bottom:1.5rem;">Both are analyzing <strong style="color:#ec4899">Tata Motors</strong>. Same company. Very different insights.</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+      <div style="padding:1.5rem;background:#ffffff05;border-radius:14px;border:1px solid #ffffff10;">
+        <div style="font-size:2rem;margin-bottom:0.75rem;">📊</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:800;color:#aaa;margin-bottom:0.75rem;">Analyst A<br><span style="font-size:0.75rem;font-weight:400;color:#555;">Structured only</span></div>
+        <ul style="font-size:0.8rem;color:#aaa;line-height:2;list-style:none;">
+          <li>✓ P/E ratio</li>
+          <li>✓ Quarterly revenue</li>
+          <li>✓ Debt-to-equity</li>
+          <li>✓ EPS growth</li>
+        </ul>
+        <div style="margin-top:1rem;font-size:0.75rem;color:#555;">Standard quant approach. Everyone has this.</div>
+      </div>
+
+      <div style="padding:1.5rem;background:#ec489910;border-radius:14px;border:1px solid #ec489930;">
+        <div style="font-size:2rem;margin-bottom:0.75rem;">🧠</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:800;color:#ec4899;margin-bottom:0.75rem;">Analyst B<br><span style="font-size:0.75rem;font-weight:400;color:#aaa;">Structured + Unstructured</span></div>
+        <ul style="font-size:0.8rem;color:#aaa;line-height:2;list-style:none;">
+          <li>✓ All of the above PLUS</li>
+          <li>🔴 "Cautious" + "headwinds" up 60% in last 2 earnings calls</li>
+          <li>🟢 EV Twitter sentiment +40% last month</li>
+          <li>🔴 Supplier stress signals in 200 news articles</li>
+        </ul>
+        <div style="margin-top:1rem;font-size:0.75rem;color:#ec4899;font-weight:700;">This is exactly what Two Sigma & Man AHL do at scale.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="sep"></div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!--           Q4 — ML TYPES                     -->
+<!-- ═══════════════════════════════════════════ -->
+<section class="section reveal" id="q4">
+  <div class="section-header">
+    <span class="q-badge" style="background:#f59e0b20;color:#f59e0b;border:1px solid #f59e0b40;">Q4</span>
+    <h2 class="section-title">3 Types of Machine Learning</h2>
+  </div>
+
+  <!-- School Analogy -->
+  <div class="story-scene" style="--scene-color:#f59e0b">
+    <div class="scene-label">🎓 The School Analogy — Never Forget This</div>
+
+    <div class="ml-cards">
+      <!-- Supervised -->
+      <div class="ml-card" style="background:#00d4aa10;border:1px solid #00d4aa20;--ml-color:#00d4aa">
+        <span class="ml-emoji">📚</span>
+        <div class="ml-type" style="color:#00d4aa">Supervised</div>
+        <div class="ml-analogy">
+          <strong style="color:#00d4aa">Open book exam with answer key.</strong><br><br>
+          You study past papers <em>with</em> correct answers. Your brain learns the pattern. On exam day, you apply that pattern to new questions you've never seen.
+        </div>
+        <div class="ml-example">
+          🏦 Finance: Credit scoring<br>
+          Labels: who defaulted or not<br>
+          Model: XGBoost predicts risk
+        </div>
+      </div>
+
+      <!-- Unsupervised -->
+      <div class="ml-card" style="background:#7c3aed10;border:1px solid #7c3aed20;--ml-color:#7c3aed">
+        <span class="ml-emoji">📦</span>
+        <div class="ml-type" style="color:#7c3aed">Unsupervised</div>
+        <div class="ml-analogy">
+          <strong style="color:#7c3aed">1000 books, no instructions. Sort them.</strong><br><br>
+          Nobody tells you the categories. You find natural groupings yourself — by genre, size, author. No right answer. You discover structure.
+        </div>
+        <div class="ml-example">
+          🏦 Finance: Fund clustering<br>
+          No labels given<br>
+          Model: K-Means finds groups
+        </div>
+      </div>
+
+      <!-- Reinforcement -->
+      <div class="ml-card" style="background:#ff6b3510;border:1px solid #ff6b3520;--ml-color:#ff6b35">
+        <span class="ml-emoji">🎮</span>
+        <div class="ml-type" style="color:#ff6b35">Reinforcement</div>
+        <div class="ml-analogy">
+          <strong style="color:#ff6b35">Playing a video game alone.</strong><br><br>
+          Nobody teaches you moves. You try things, get points for good moves, lose lives for bad ones. After thousands of tries, you master the game.
+        </div>
+        <div class="ml-example">
+          🏦 Finance: Algo trading<br>
+          Reward = portfolio returns<br>
+          Agent learns strategies
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Deep Dive: Credit Scoring -->
+  <div class="story-scene" style="--scene-color:#00d4aa">
+    <div class="scene-label">🏦 Deep Dive — HDFC Bank Credit Scoring (Supervised)</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;">
+      <div>
+        <p style="line-height:1.8;color:#ccc;font-size:0.9rem;">
+          HDFC wants to automatically approve or reject personal loan applications. They have <strong style="color:#00d4aa">2 million past customers</strong> with known outcomes.
+        </p>
+        <br>
+        <div style="font-family:'Space Mono',monospace;font-size:0.7rem;color:#aaa;line-height:2;">
+          <span style="color:#00d4aa">INPUT FEATURES:</span><br>
+          → Age, Income, EMIs<br>
+          → CIBIL Score<br>
+          → Employment type<br>
+          → Payment history<br><br>
+          <span style="color:#ff6b35">TARGET LABEL:</span><br>
+          → Defaulted: Yes / No<br><br>
+          <span style="color:#f59e0b">OUTPUT:</span><br>
+          → Risk probability score<br>
+          → Decision in 200ms
+        </div>
+      </div>
+      <div class="anim-stage" style="flex-direction:column;gap:1rem;min-height:150px;">
+        <div style="text-align:center;">
+          <div style="font-size:2.5rem;margin-bottom:0.5rem;">👤</div>
+          <div style="font-size:0.7rem;font-family:'Space Mono',monospace;color:#aaa;">NEW APPLICANT</div>
+        </div>
+        <div style="font-size:1.5rem;color:#aaa;animation:bounce 1s infinite;">↓</div>
+        <div style="background:#00d4aa15;border:1px solid #00d4aa30;padding:0.75rem 1.5rem;border-radius:10px;text-align:center;">
+          <div style="font-size:0.7rem;font-family:'Space Mono',monospace;color:#00d4aa;">XGBOOST MODEL</div>
+          <div style="font-size:0.6rem;color:#aaa;">trained on 2M customers</div>
+        </div>
+        <div style="font-size:1.5rem;color:#aaa;animation:bounce 1s infinite;">↓</div>
+        <div style="display:flex;gap:1rem;">
+          <div style="background:#00d4aa20;border:1px solid #00d4aa;padding:0.5rem 1rem;border-radius:8px;font-size:0.7rem;color:#00d4aa;font-family:'Space Mono',monospace;">✓ APPROVED<br>Risk: 12%</div>
+          <div style="background:#ff6b3520;border:1px solid #ff6b35;padding:0.5rem 1rem;border-radius:8px;font-size:0.7rem;color:#ff6b35;font-family:'Space Mono',monospace;">✗ REVIEW<br>Risk: 78%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RL Story -->
+  <div class="story-scene" style="--scene-color:#ff6b35">
+    <div class="scene-label">🎮 AlphaGo → Algo Trading (Reinforcement)</div>
+    <p style="line-height:1.8;color:#ccc;margin-bottom:1rem;">
+      DeepMind's AlphaGo was <strong style="color:#ff6b35">never taught the rules of good play.</strong> It played millions of games against itself, rewarded only for winning. It discovered strategies no human had ever thought of.
+      <br><br>
+      An algorithmic trading agent works identically. It's not told "buy low, sell high." It discovers optimal strategies through <strong style="color:#f59e0b">millions of simulated trading sessions</strong> with reward = risk-adjusted returns.
+    </p>
+    <div class="anim-stage" style="min-height:120px;">
+      <div style="display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap;justify-content:center;">
+        <div style="text-align:center;">
+          <div style="font-size:2.5rem;">🤖</div>
+          <div style="font-size:0.65rem;font-family:'Space Mono',monospace;color:#ff6b35;">AGENT</div>
+        </div>
+        <div style="font-size:0.8rem;color:#aaa;font-family:'Space Mono',monospace;text-align:center;">
+          Takes action<br>↓<br>Gets reward/penalty<br>↓<br>Updates strategy
+        </div>
+        <div style="text-align:center;">
+          <div style="font-size:2.5rem;animation:pulse 2s infinite;">📈</div>
+          <div style="font-size:0.65rem;font-family:'Space Mono',monospace;color:#f59e0b;">MARKET</div>
+        </div>
+        <div style="font-size:0.8rem;color:#aaa;text-align:center;">After<br>1M sessions</div>
+        <div style="text-align:center;">
+          <div style="font-size:2.5rem;">🏆</div>
+          <div style="font-size:0.65rem;font-family:'Space Mono',monospace;color:#00d4aa;">OPTIMAL<br>STRATEGY</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="sep"></div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!--           Q5 — EDA                          -->
+<!-- ═══════════════════════════════════════════ -->
+<section class="section reveal" id="q5">
+  <div class="section-header">
+    <span class="q-badge" style="background:#ec489920;color:#ec4899;border:1px solid #ec489940;">Q5</span>
+    <h2 class="section-title">Why EDA is Non-Negotiable</h2>
+  </div>
+
+  <!-- Surgery Analogy -->
+  <div class="story-scene" style="--scene-color:#ec4899">
+    <div class="scene-label">🏥 The Surgery Analogy</div>
+    <div class="big-quote">
+      Would you want a surgeon who skips the MRI scan and just<br>
+      <span style="color:#ec4899">cuts you open based on a guess?</span>
+    </div>
+    <p style="text-align:center;color:#aaa;margin-top:1rem;">EDA is the MRI scan. The model is the surgery. Never skip the scan.</p>
+  </div>
+
+  <!-- 5 Things EDA Always Finds -->
+  <div class="story-scene" style="--scene-color:#ec4899">
+    <div class="scene-label">🔍 5 Things EDA Always Reveals (click each)</div>
+
+    <div class="eda-steps">
+
+      <div class="eda-step" style="--eda-color:#ff6b35;animation-delay:0s" onclick="showTip('Missing Values','In a loan model, income was blank for 30% of customers. Why? Self-employed people with irregular income — a HUGE risk signal hidden in missingness. Filling with average income would hide this completely.')">
+        <span class="eda-num">01</span>
+        <span class="eda-emoji">🕳️</span>
+        <div class="eda-title">Missing Values</div>
+        <div class="eda-desc">Never random. The WHY matters more than the gap.</div>
+      </div>
+
+      <div class="eda-step" style="--eda-color:#00d4aa;animation-delay:0.1s" onclick="showTip('Outliers','A dataset of daily returns shows +900% one day. Data error? Or the day the company got acquired at a premium? A data error gets removed. An acquisition event is your most important data point. Context is everything.')">
+        <span class="eda-num">02</span>
+        <span class="eda-emoji">🎯</span>
+        <div class="eda-title">Outliers</div>
+        <div class="eda-desc">Error or reality? The answer changes everything.</div>
+      </div>
+
+      <div class="eda-step" style="--eda-color:#7c3aed;animation-delay:0.2s" onclick="showTip('Class Imbalance','99.5% legitimate transactions, 0.5% fraud. A model predicting NOT FRAUD every single time achieves 99.5% accuracy but catches zero fraud. Without EDA, you\'d never notice. Apply SMOTE or class weights to fix.')">
+        <span class="eda-num">03</span>
+        <span class="eda-emoji">⚖️</span>
+        <div class="eda-title">Class Imbalance</div>
+        <div class="eda-desc">99% accuracy can mean a completely useless model.</div>
+      </div>
+
+      <div class="eda-step" style="--eda-color:#f59e0b;animation-delay:0.3s" onclick="showTip('Data Leakage','Building a loan default model. Someone included account_closed as a feature — recorded AFTER default. Model gets 99% accuracy. In production it collapses. Suspiciously perfect correlation = leakage red flag.')">
+        <span class="eda-num">04</span>
+        <span class="eda-emoji">🚨</span>
+        <div class="eda-title">Data Leakage</div>
+        <div class="eda-desc">Future info accidentally in training = fake perfect model.</div>
+      </div>
+
+      <div class="eda-step" style="--eda-color:#ec4899;animation-delay:0.4s" onclick="showTip('Distribution Shift','Model trained on 2019 spending data. Deployed April 2020. COVID lockdown hit. Customer behavior changed overnight. Model confidently predicts wrong answers. EDA before retraining would instantly reveal the shift.')">
+        <span class="eda-num">05</span>
+        <span class="eda-emoji">📉</span>
+        <div class="eda-title">Distribution Shift</div>
+        <div class="eda-desc">Trained in one world, deployed in another.</div>
+      </div>
+
+    </div>
+    <p style="font-size:0.75rem;color:#555;margin-top:1rem;">👆 Click each card for a real story</p>
+  </div>
+
+  <!-- Amazon Disaster -->
+  <div class="story-scene" style="--scene-color:#ff6b35">
+    <div class="scene-label">💥 3 Real Disasters From Skipping EDA</div>
+
+    <div style="display:flex;flex-direction:column;gap:1.25rem;">
+
+      <div style="padding:1.25rem;background:#ff6b3508;border-radius:12px;border-left:3px solid #ff6b35;">
+        <div style="font-size:1.2rem;margin-bottom:0.5rem;">🏢 Amazon Hiring AI (2018)</div>
+        <p style="font-size:0.85rem;color:#aaa;line-height:1.7;">
+          Built an AI to screen resumes. Training data was biased toward men (historical hiring). The model learned to <strong style="color:#ff6b35">penalize resumes containing the word "women's"</strong> — as in women's chess club. Actively discriminated against female candidates. Scrapped entirely. Root cause: nobody examined the data before training.
+        </p>
+      </div>
+
+      <div style="padding:1.25rem;background:#7c3aed08;border-radius:12px;border-left:3px solid #7c3aed;">
+        <div style="font-size:1.2rem;margin-bottom:0.5rem;">🏥 Hospital Pneumonia Model</div>
+        <p style="font-size:0.85rem;color:#aaa;line-height:1.7;">
+          Model predicted asthma patients as <strong style="color:#7c3aed">lower risk</strong> for pneumonia complications. Why? Historically, asthma patients were sent directly to ICU and got aggressive treatment — so they survived more. Model learned a hospital policy, not medical reality. Deploying it would have sent high-risk asthmatics home.
+        </p>
+      </div>
+
+      <div style="padding:1.25rem;background:#00d4aa08;border-radius:12px;border-left:3px solid #00d4aa;">
+        <div style="font-size:1.2rem;margin-bottom:0.5rem;">🇮🇳 Indian Fintech Startup</div>
+        <p style="font-size:0.85rem;color:#aaa;line-height:1.7;">
+          Building a loan default model. 30% of "non-default" labels were actually customers who <strong style="color:#00d4aa">never made a single payment</strong> — written off as fraud, not recorded as default. Model trained on corrupted labels. Started approving high-risk customers confidently. EDA on the target variable distribution would have caught this on Day 1.
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- The 5 Questions -->
+  <div class="story-scene" style="--scene-color:#00d4aa">
+    <div class="scene-label">✅ Your EDA Checklist — Ask These Before Any Model</div>
+    <div style="display:flex;flex-direction:column;gap:0.75rem;margin-top:0.5rem;">
+      <div style="display:flex;align-items:flex-start;gap:1rem;padding:1rem;background:#ffffff05;border-radius:10px;">
+        <span style="font-size:1.5rem;flex-shrink:0;">1️⃣</span>
+        <div><strong style="color:#00d4aa">How many missing values, and are they random or systematic?</strong><br><span style="font-size:0.8rem;color:#aaa;">Systematic missingness is itself a signal — don't blindly impute.</span></div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:1rem;padding:1rem;background:#ffffff05;border-radius:10px;">
+        <span style="font-size:1.5rem;flex-shrink:0;">2️⃣</span>
+        <div><strong style="color:#f59e0b">Are there outliers, and are they errors or genuine extreme events?</strong><br><span style="font-size:0.8rem;color:#aaa;">Context decides whether you remove them or treat them as your most important data points.</span></div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:1rem;padding:1rem;background:#ffffff05;border-radius:10px;">
+        <span style="font-size:1.5rem;flex-shrink:0;">3️⃣</span>
+        <div><strong style="color:#7c3aed">Is my target variable balanced, or does one class dominate?</strong><br><span style="font-size:0.8rem;color:#aaa;">High imbalance means accuracy is a meaningless metric. Use AUC-ROC or F1.</span></div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:1rem;padding:1rem;background:#ffffff05;border-radius:10px;">
+        <span style="font-size:1.5rem;flex-shrink:0;">4️⃣</span>
+        <div><strong style="color:#ec4899">Are any features suspiciously well-correlated with the target?</strong><br><span style="font-size:0.8rem;color:#aaa;">Too-perfect correlation = possible data leakage. Investigate before trusting.</span></div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:1rem;padding:1rem;background:#ffffff05;border-radius:10px;">
+        <span style="font-size:1.5rem;flex-shrink:0;">5️⃣</span>
+        <div><strong style="color:#ff6b35">Does data distribution look the same across time periods?</strong><br><span style="font-size:0.8rem;color:#aaa;">Train in 2022, deploy in 2024 — the world may have completely changed.</span></div>
+      </div>
+    </div>
+    <div class="insight" style="border-color:#00d4aa;margin-top:1.5rem;">
+      If you can't confidently answer all 5 questions, <strong>you are not ready to build a model.</strong>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!--              FOOTER                         -->
+<!-- ═══════════════════════════════════════════ -->
+<footer class="footer">
+  <div style="font-size:2rem;margin-bottom:1rem;">🚀</div>
+  <p style="font-size:1.1rem;margin-bottom:0.5rem;">
+    Built for your <strong>class presentation & market preparation</strong>
+  </p>
+  <p style="color:#555;">5 topics · Real analogies · Zero confusion</p>
+  <div style="margin-top:2rem;padding:1.25rem;background:#ffffff05;border-radius:12px;display:inline-block;max-width:500px;">
+    <p style="font-family:'Space Mono',monospace;font-size:0.75rem;color:#f59e0b;">
+      "Data Science is just teaching computers to make decisions using examples from the past. Everything else is details."
+    </p>
+  </div>
+</footer>
+
+<script>
+  // ── FLOATING DOTS ──
+  const dotsContainer = document.getElementById('floatingDots');
+  for (let i = 0; i < 25; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'dot';
+    const size = Math.random() * 8 + 3;
+    const colors = ['#ff6b35','#00d4aa','#7c3aed','#f59e0b','#ec4899'];
+    dot.style.cssText = `
+      width:${size}px;height:${size}px;
+      left:${Math.random()*100}%;
+      background:${colors[Math.floor(Math.random()*colors.length)]};
+      animation-duration:${Math.random()*15+10}s;
+      animation-delay:${Math.random()*10}s;
+    `;
+    dotsContainer.appendChild(dot);
+  }
+
+  // ── SCROLL PROGRESS ──
+  window.addEventListener('scroll', () => {
+    const scrolled = (window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100;
+    document.getElementById('progressBar').style.width = scrolled + '%';
+
+    // Nav pill active state
+    const sections = ['q1','q2','q3','q4','q5'];
+    sections.forEach((id, i) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const pills = document.querySelectorAll('.pill');
+      if (rect.top <= 200 && rect.bottom >= 200) {
+        pills.forEach(p => p.classList.remove('active'));
+        pills[i].classList.add('active');
+      }
+    });
+
+    // Reveal
+    document.querySelectorAll('.reveal').forEach(el => {
+      if (el.getBoundingClientRect().top < window.innerHeight - 100) {
+        el.classList.add('visible');
+      }
+    });
+  });
+
+  // ── SCROLL TO ──
+  function scrollTo(id) {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // ── TOOLTIP ──
+  function showTip(title, body) {
+    document.getElementById('tipTitle').textContent = title;
+    document.getElementById('tipBody').textContent = body;
+    document.getElementById('tooltip').classList.add('show');
+    clearTimeout(window._tipTimer);
+    window._tipTimer = setTimeout(() => closeTooltip(), 8000);
+  }
+
+  function closeTooltip() {
+    document.getElementById('tooltip').classList.remove('show');
+  }
+
+  // ── PIPE NODE DELAYS ──
+  document.querySelectorAll('.pipe-node').forEach((node, i) => {
+    node.style.animationDelay = (i * 0.1) + 's';
+  });
+
+  // ── INITIAL REVEAL ──
+  setTimeout(() => {
+    document.querySelectorAll('.reveal').forEach(el => {
+      if (el.getBoundingClientRect().top < window.innerHeight) {
+        el.classList.add('visible');
+      }
+    });
+  }, 100);
+</script>
+</body>
+</html>
